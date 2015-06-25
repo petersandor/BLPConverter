@@ -17,8 +17,13 @@ tBGRAPixel* blp2_convert_paletted_alpha8(uint8_t* pSrc, tBLP2Header* pHeader, un
 tBGRAPixel* blp2_convert_dxt(uint8_t* pSrc, tBLP2Header* pHeader, unsigned int width, unsigned int height, int flags);
 
 
-tBLPInfos blp_processFile(FILE* pFile)
+tBLPInfos blp_processFile(const char* pFilename)
 {
+    FILE* pFile = fopen(pFilename, "rb");
+
+    if (pFile == NULL)
+        return NULL;
+
     tInternalBLPInfos* pBLPInfos = new tInternalBLPInfos();
     char magic[4];
 
@@ -73,9 +78,10 @@ tBLPInfos blp_processFile(FILE* pFile)
         return 0;
     }
 
+    fclose(pFile);
+
     return (tBLPInfos) pBLPInfos;
 }
-
 
 void blp_release(tBLPInfos blpInfos)
 {
@@ -180,8 +186,13 @@ unsigned int blp_nbMipLevels(tBLPInfos blpInfos)
 }
 
 
-tBGRAPixel* blp_convert(FILE* pFile, tBLPInfos blpInfos, unsigned int mipLevel)
+tBGRAPixel* blp_convertFile(const char* pFileName, tBLPInfos blpInfos, unsigned int mipLevel)
 {
+    FILE* pFile = fopen(pFileName, "rb");
+
+    if (pFile == NULL)
+        return NULL;
+
     tInternalBLPInfos* pBLPInfos = static_cast<tInternalBLPInfos*>(blpInfos);
 
     // Check the mip level
@@ -261,11 +272,11 @@ tBGRAPixel* blp_convert(FILE* pFile, tBLPInfos blpInfos, unsigned int mipLevel)
         default:                           break;
     }
 
+    fclose(pFile);
     delete[] pSrc;
 
     return pDst;
 }
-
 
 std::string blp_asString(tBLPFormat format)
 {
